@@ -1,0 +1,52 @@
+<!-- IMPORTANT: This code contains improper/incomplete implementation on its own. 
+Google Recaptcha requires server-side validation for proper implementation.
+Also, this obfuscation technique exposes your cipherkey in client-facing source code.
+It is merely a slight obfuscation to keep your information from being exposed in 
+client-facing source that can easily be harvested by bots. It will not hold up to 
+scrutiny by malicious actors and is not secure. Proceed at your own risk! -->
+
+<html>
+  <head>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+	<script>
+		const decipher = salt => {
+			const textToChars = text => text.split('').map(c => c.charCodeAt(0));
+			const applySaltToChar = code => textToChars(salt).reduce((a,b) => a ^ b, code);
+			return encoded => encoded.match(/.{1,2}/g)
+			.map(hex => parseInt(hex, 16))
+			.map(applySaltToChar)
+			.map(charCode => String.fromCharCode(charCode))
+			.join('');
+		}
+		//To decipher, you need to create a decipher and use it:
+		const myDecipher = decipher('<CIPHER-KEY>')
+		const myPlaintext = (myDecipher("CIPHER-TEXT"))
+	</script>
+    <script>
+      function displayText(event) {
+        event.preventDefault(); // Prevent form submission
+        var displayArea = document.getElementById("display-area");
+        displayArea.textContent= myPlaintext;
+      }
+    </script>
+  </head>
+  <body>
+    <form action="?" method="POST" onsubmit="return false;">
+      <div
+        class="g-recaptcha"
+        data-sitekey="<YOUR-SITE-KEY>"
+        data-theme="dark"
+        data-callback="callback"
+      ></div>
+      <br />
+      <button id="submit-button" type="submit" onclick="displayText(event)" disabled>Submit</button>
+    </form>
+    <script type="text/javascript">
+      function callback() {
+        const submitButton = document.getElementById("submit-button");
+        submitButton.removeAttribute("disabled");
+      }
+    </script>
+    <div id="display-area"></div>
+  </body>
+</html>
